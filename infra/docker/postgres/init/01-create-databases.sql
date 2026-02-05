@@ -1,0 +1,9 @@
+CREATE DATABASE auth_service;
+CREATE DATABASE user_service;
+CREATE DATABASE hotel_service;
+CREATE DATABASE tour_service;
+CREATE DATABASE booking_service;
+CREATE DATABASE payment_service;
+CREATE DATABASE notification_service;
+CREATE DATABASE reporting_service;
+CREATE DATABASE currency_service;

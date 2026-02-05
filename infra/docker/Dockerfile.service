@@ -1,0 +1,24 @@
+# syntax=docker/dockerfile:1.6
+
+FROM oven/bun:1.1-alpine AS deps
+WORKDIR /app
+COPY package.json bun.lockb* ./
+RUN bun install
+
+FROM oven/bun:1.1-alpine AS build
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+ARG SERVICE_NAME
+ENV SERVICE_NAME=${SERVICE_NAME}
+RUN bun run build -- ${SERVICE_NAME}
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ARG SERVICE_NAME
+ENV SERVICE_NAME=${SERVICE_NAME}
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+EXPOSE 3000
+CMD ["node", "dist/apps/${SERVICE_NAME}/main.js"]

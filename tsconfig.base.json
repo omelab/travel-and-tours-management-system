@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2021",
+    "lib": ["ES2021"],
+    "declaration": false,
+    "sourceMap": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "incremental": true,
+    "skipLibCheck": true,
+    "rootDir": ".",
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@zedtrago/common": ["libs/common/src/index.ts"],
+      "@zedtrago/config": ["libs/config/src/index.ts"],
+      "@zedtrago/database": ["libs/database/src/index.ts"],
+      "@zedtrago/messaging": ["libs/messaging/src/index.ts"],
+      "@zedtrago/auth": ["libs/auth/src/index.ts"],
+      "@zedtrago/observability": ["libs/observability/src/index.ts"],
+      "@zedtrago/contracts": ["libs/contracts/src/index.ts"]
+    }
+  }
+}

@@ -1,0 +1,363 @@
+version: "3.8"
+
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../nginx/sites:/etc/nginx/conf.d:ro
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    depends_on:
+      - api-gateway
+    networks:
+      - edge
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+
+  api-gateway:
+    image: ${IMAGE_REGISTRY}/${IMAGE_REPO}-api-gateway:${IMAGE_TAG}
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: api-gateway
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      PORT: 3000
+      AUTH_SERVICE_URL: http://auth-service:3004
+      USER_SERVICE_URL: http://user-service:3001
+      HOTEL_SERVICE_URL: http://hotel-service:3002
+      TOUR_SERVICE_URL: http://tour-service:3003
+      BOOKING_SERVICE_URL: http://booking-service:3005
+      PAYMENT_SERVICE_URL: http://payment-service:3006
+      NOTIFICATION_SERVICE_URL: http://notification-service:3007
+      REPORTING_SERVICE_URL: http://reporting-service:3008
+      CURRENCY_SERVICE_URL: http://currency-service:3009
+      SEARCH_SERVICE_URL: http://search-service:3010
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      REDIS_URL: ${REDIS_URL}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - edge
+      - internal
+    depends_on:
+      - auth-service
+      - user-service
+      - hotel-service
+      - tour-service
+      - booking-service
+      - payment-service
+      - notification-service
+      - reporting-service
+      - currency-service
+      - rabbitmq
+      - redis
+      - postgres
+
+  auth-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_REPO}-auth-service:${IMAGE_TAG}
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: auth-service
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      PORT: 3004
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/auth_service
+      REDIS_URL: ${REDIS_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - internal
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  user-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_REPO}-user-service:${IMAGE_TAG}
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: user-service
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/user_service
+      REDIS_URL: ${REDIS_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    networks:
+      - internal
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  hotel-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_REPO}-hotel-service:${IMAGE_TAG}
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: hotel-service
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/hotel_service
+      REDIS_URL: ${REDIS_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    networks:
+      - internal
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  tour-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_REPO}-tour-service:${IMAGE_TAG}
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: tour-service
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      PORT: 3003
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/tour_service
+      REDIS_URL: ${REDIS_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    networks:
+      - internal
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  booking-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_REPO}-booking-service:${IMAGE_TAG}
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: booking-service
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      PORT: 3005
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/booking_service
+      REDIS_URL: ${REDIS_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    networks:
+      - internal
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  payment-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_REPO}-payment-service:${IMAGE_TAG}
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: payment-service
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      PORT: 3006
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/payment_service
+      REDIS_URL: ${REDIS_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    networks:
+      - internal
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  notification-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_REPO}-notification-service:${IMAGE_TAG}
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: notification-service
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      PORT: 3007
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/notification_service
+      REDIS_URL: ${REDIS_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    networks:
+      - internal
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  reporting-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_REPO}-reporting-service:${IMAGE_TAG}
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: reporting-service
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      PORT: 3008
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/reporting_service
+      REDIS_URL: ${REDIS_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    networks:
+      - internal
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  currency-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_REPO}-currency-service:${IMAGE_TAG}
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: currency-service
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      PORT: 3009
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/currency_service
+      REDIS_URL: ${REDIS_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    networks:
+      - internal
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  search-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_REPO}-search-service:${IMAGE_TAG}
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: search-service
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      PORT: 3010
+      ELASTIC_NODE: http://elasticsearch:9200
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      REDIS_URL: ${REDIS_URL}
+    networks:
+      - internal
+    depends_on:
+      - elasticsearch
+      - rabbitmq
+      - redis
+
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: elasticsearch:8.12.2
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - internal
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+networks:
+  edge:
+    driver: bridge
+  internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  elasticsearch_data:

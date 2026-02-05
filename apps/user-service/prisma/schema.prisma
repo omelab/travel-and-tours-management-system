@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AgencyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AgentUserRole {
+  MANAGER
+  STAFF
+}
+
+enum ContactType {
+  PHONE
+  EMAIL
+  EMERGENCY
+}
+
+model Profile {
+  id          String     @id @default(uuid()) @db.Uuid
+  userId      String     @unique @db.Uuid
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime?
+  gender      String?
+  nationality String?
+  contacts    Contact[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("profiles")
+}
+
+model Agency {
+  id           String        @id @default(uuid()) @db.Uuid
+  companyName  String
+  tradeLicense String?
+  address      String?
+  country      String?
+  status       AgencyStatus  @default(PENDING)
+  agentUsers   AgentUser[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("agencies")
+}
+
+model AgentUser {
+  userId   String        @db.Uuid
+  agencyId String        @db.Uuid
+  role     AgentUserRole @default(STAFF)
+  agency   Agency        @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, agencyId])
+  @@index([agencyId])
+  @@map("agent_users")
+}
+
+model Contact {
+  id        String      @id @default(uuid()) @db.Uuid
+  profileId String      @db.Uuid
+  type      ContactType
+  value     String
+  profile   Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([profileId])
+  @@map("contacts")
+}

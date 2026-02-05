@@ -2,6 +2,8 @@
 
 This repository contains the microservices for the Enterprise Travel Platform.
 
+![Microservice Project Architecture](microservoce-project-architecture.png)
+
 Quick start:
 
 ```bash

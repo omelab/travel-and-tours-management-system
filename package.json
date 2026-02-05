@@ -47,8 +47,6 @@
     "@nestjs/passport": "latest",
     "@nestjs/platform-fastify": "latest",
     "@nestjs/swagger": "latest",
-    "@prisma/adapter-pg": "latest",
-    "@prisma/client": "latest",
     "@types/passport-jwt": "^4.0.1",
     "amqplib": "latest",
     "class-transformer": "latest",
@@ -71,7 +69,6 @@
     "@nestjs/testing": "latest",
     "@nestia/sdk": "latest",
     "@types/node": "latest",
-    "prisma": "latest",
     "ts-node": "latest",
     "typescript": "latest"
   }

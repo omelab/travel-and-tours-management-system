@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from '@zedtrago/database';
 import { APP_GUARD } from '@nestjs/core';
 import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
@@ -16,6 +17,7 @@ import { HealthController } from './health/health.controller';
         join(process.cwd(), '.env'),
       ],
     }),
+    DatabaseModule.forRoot(),
     AuthModule,
   ],
   controllers: [HealthController],
